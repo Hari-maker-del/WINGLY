@@ -1,0 +1,72 @@
+import { useMemo, useState } from 'react'
+import { Bird, LayoutDashboard, Feather, Egg, HeartPulse, Sprout, CalendarDays, ChartNoAxesCombined, Settings, Search, Bell, Plus, ChevronDown, ArrowUpRight, MoreHorizontal, Clock3, CheckCircle2, AlertTriangle, Menu, X, SlidersHorizontal, Sparkles, MapPin, Activity, PawPrint } from 'lucide-react'
+
+type BirdRecord = { id: string; name: string; species: string; tag: string; age: string; status: 'Healthy' | 'Monitoring' | 'Incubating'; emoji: string; bg: string; location: string }
+const initialBirds: BirdRecord[] = [
+  { id:'W-1042', name:'Sunny', species:'Budgerigar', tag:'W-1042', age:'1 yr 4 mo', status:'Healthy', emoji:'🦜', bg:'mint', location:'Aviary A · Perch 03' },
+  { id:'W-1038', name:'Clover', species:'Lovebird', tag:'W-1038', age:'2 yr 1 mo', status:'Monitoring', emoji:'🐦', bg:'peach', location:'Aviary A · Perch 08' },
+  { id:'W-1031', name:'Pearl', species:'White Leghorn', tag:'W-1031', age:'8 mo', status:'Incubating', emoji:'🐔', bg:'lavender', location:'Poultry house · Nest 02' },
+  { id:'W-1024', name:'Rio', species:'Blue-and-gold macaw', tag:'W-1024', age:'5 yr 2 mo', status:'Healthy', emoji:'🦜', bg:'sky', location:'Flight aviary · Zone B' },
+]
+const nav = [
+  {label:'Overview', icon:LayoutDashboard},
+  {label:'Bird registry', icon:Bird},
+  {label:'Health records', icon:HeartPulse},
+  {label:'Breeding & eggs', icon:Egg},
+  {label:'Nutrition & habitat', icon:Sprout},
+  {label:'Lifecycle timeline', icon:CalendarDays},
+  {label:'Insights', icon:ChartNoAxesCombined},
+]
+function App() {
+  const [active, setActive] = useState('Overview')
+  const [query, setQuery] = useState('')
+  const [birds, setBirds] = useState(initialBirds)
+  const [showAdd, setShowAdd] = useState(false)
+  const [mobileNav, setMobileNav] = useState(false)
+  const [toast, setToast] = useState('')
+  const [form, setForm] = useState({name:'',species:'',tag:''})
+  const filtered = useMemo(() => birds.filter(b => [b.name,b.species,b.tag].some(v => v.toLowerCase().includes(query.toLowerCase()))), [birds, query])
+  const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2800) }
+  const addBird = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.name.trim() || !form.species.trim()) return
+    const record: BirdRecord = {id:form.tag.trim() || `W-${Math.floor(1000+Math.random()*8999)}`,name:form.name.trim(),species:form.species.trim(),tag:form.tag.trim() || 'Auto assigned',age:'New record',status:'Healthy',emoji:'🐦',bg:'mint',location:'Location not assigned'}
+    setBirds(prev => [record,...prev]); setForm({name:'',species:'',tag:''}); setShowAdd(false); setActive('Bird registry'); notify('Bird profile added successfully')
+  }
+  return <div className="app-shell">
+    <aside className={`sidebar ${mobileNav?'sidebar-open':''}`}>
+      <div className="brand"><div className="brand-mark"><Bird size={23} strokeWidth={2.2}/></div><div><div className="brand-name">wingly<span>.</span></div><div className="brand-sub">BIRD LIFECYCLE INTELLIGENCE</div></div><button className="icon-btn mobile-close" onClick={()=>setMobileNav(false)} aria-label="Close menu"><X size={19}/></button></div>
+      <div className="workspace"><div className="workspace-icon"><Feather size={18}/></div><div className="workspace-text"><b>Willow Aviary</b><span>Personal workspace</span></div><ChevronDown size={15} className="muted"/></div>
+      <div className="nav-label">WORKSPACE</div>
+      <nav>{nav.map(item => <button key={item.label} onClick={()=>{setActive(item.label);setMobileNav(false)}} className={`nav-item ${active===item.label?'active':''}`}><item.icon size={18}/><span>{item.label}</span>{item.label==='Bird registry'&&<span className="nav-count">{birds.length}</span>}</button>)}</nav>
+      <div className="sidebar-bottom"><div className="care-card"><div className="care-icon"><Sparkles size={17}/></div><b>A little care goes a long way.</b><p>Small observations today help birds thrive tomorrow.</p><button onClick={()=>notify('Care guide is coming soon')}>Explore care guide <ArrowUpRight size={14}/></button></div><button className="nav-item settings" onClick={()=>{setActive('Settings');notify('Settings panel coming soon')}}><Settings size={18}/><span>Settings</span></button><div className="profile"><div className="avatar">H</div><div className="profile-text"><b>Aviary keeper</b><span>Owner account</span></div><MoreHorizontal size={18} className="muted"/></div></div>
+    </aside>
+    {mobileNav && <button className="mobile-scrim" aria-label="Close menu" onClick={()=>setMobileNav(false)}/>}
+    <main className="main">
+      <header className="topbar"><button className="icon-btn mobile-menu" onClick={()=>setMobileNav(true)} aria-label="Open menu"><Menu size={20}/></button><div className="breadcrumbs">Workspace <span>/</span> <b>{active}</b></div><div className="top-actions"><div className="status-pill"><span className="live-dot"></span> All systems healthy</div><button className="icon-btn notification" onClick={()=>notify('You’re all caught up on notifications')} aria-label="Notifications"><Bell size={19}/><i/></button><div className="top-avatar">AK</div></div></header>
+      <div className="page-content">
+        <section className="welcome-row"><div><div className="eyebrow"><span className="eyebrow-line"></span> THURSDAY, OCTOBER 22, 2026</div><h1>{active==='Overview'?'A better day for every bird.':active}</h1><p className="welcome-copy">{active==='Overview'?'A calm, clear view of the lives in your care.':active==='Bird registry'?'Every bird has a story. Keep each profile close at hand.':`Your ${active.toLowerCase()} at a glance.`}</p></div><button className="primary-btn" onClick={()=>setShowAdd(true)}><Plus size={17}/> Add a bird</button></section>
+        {active==='Overview' ? <>
+          <section className="hero-banner"><div className="hero-copy"><div className="hero-tag"><Sparkles size={13}/> YOUR AVIARY, IN HARMONY</div><h2>Good care starts<br/>with <em>knowing them.</em></h2><p>Track every milestone, notice the little changes, and give each bird the care it deserves.</p><button onClick={()=>setActive('Bird registry')} className="hero-link">Explore your bird registry <ArrowUpRight size={15}/></button></div><div className="hero-art"><div className="sun-orb"></div><div className="leaf leaf-one"></div><div className="leaf leaf-two"></div><div className="bird-illustration">🦜</div><div className="hero-perch"></div><div className="art-note"><span className="note-dot"></span><div><b>Every bird matters</b><small>One thoughtful step at a time</small></div></div></div><div className="hero-decoration">W</div></section>
+          <section className="stats-grid">
+            <Stat icon={<Bird size={18}/>} label="Birds in your care" value={String(birds.length).padStart(2,'0')} foot="Across your aviary" tone="green" />
+            <Stat icon={<HeartPulse size={18}/>} label="Health check-ins" value="03" foot="1 needs a closer look" tone="peach" />
+            <Stat icon={<Egg size={18}/>} label="Eggs & incubation" value="06" foot="2 hatch dates approaching" tone="purple" />
+            <Stat icon={<Sprout size={18}/>} label="Care tasks today" value="08" foot="5 completed so far" tone="blue" />
+          </section>
+          <section className="content-grid"><div className="panel bird-panel"><div className="panel-heading"><div><div className="section-kicker">YOUR COLLECTION</div><h3>Birds in your care <span className="small-count">{birds.length}</span></h3></div><button className="text-action" onClick={()=>setActive('Bird registry')}>View all <ArrowUpRight size={15}/></button></div><div className="search-row"><div className="search-box"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search by name, species or ID..." aria-label="Search birds"/></div><button className="filter-btn" onClick={()=>notify('Showing all bird records')}><SlidersHorizontal size={16}/><span>Filter</span></button></div><div className="bird-list">{filtered.slice(0,4).map(bird=><BirdRow key={bird.id} bird={bird} onClick={()=>notify(`${bird.name} · ${bird.species} · ${bird.location}`)}/>)}</div><button className="panel-footer" onClick={()=>setActive('Bird registry')}>Open bird registry <ArrowUpRight size={15}/></button></div>
+            <div className="right-stack"><div className="panel tasks-panel"><div className="panel-heading"><div><div className="section-kicker">STAY IN THE KNOW</div><h3>Today’s care list</h3></div><button className="more-btn" onClick={()=>notify('Care task options coming soon')} aria-label="More care options"><MoreHorizontal size={20}/></button></div><div className="task-progress"><div className="progress-track"><span></span></div><small>5 of 8 completed</small></div><Task title="Morning feeding" sub="All aviary zones" time="8:00 AM" done/><Task title="Check Clover’s activity" sub="Health observation" time="10:30 AM" alert/><Task title="Refresh nesting material" sub="Nest box 02" time="2:00 PM"/><button className="panel-footer" onClick={()=>notify('Full care planner coming soon')}>Open care planner <ArrowUpRight size={15}/></button></div>
+            <div className="insight-card"><div className="insight-icon"><Sparkles size={17}/></div><div><div className="insight-label">A WINGLY NOTE</div><b>Notice the little things.</b><p>Changes in appetite, posture, or song can be early clues to a bird’s wellbeing.</p></div></div></div></section>
+          <footer className="footer"><span>Made with care for every feather. <span className="footer-heart">♥</span></span><span>WINGLY <i>·</i> Bird Lifecycle Intelligence</span></footer>
+        </> : active==='Bird registry' ? <section className="panel registry-panel"><div className="panel-heading"><div><div className="section-kicker">ALL PROFILES</div><h3>Your bird registry</h3><p className="panel-description">A living record for every bird in your care.</p></div><button className="filter-btn" onClick={()=>notify('All statuses shown')}><SlidersHorizontal size={16}/> Filter</button></div><div className="search-box registry-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search name, species or ID..." aria-label="Search bird registry"/></div><div className="registry-table"><div className="registry-head"><span>BIRD</span><span>IDENTIFICATION</span><span>LOCATION</span><span>STATUS</span></div>{filtered.map(b=><div className="registry-row" key={b.id}><div className="registry-bird"><div className={`bird-avatar ${b.bg}`}>{b.emoji}</div><div><b>{b.name}</b><span>{b.species}</span></div></div><span className="tag-cell">{b.tag}</span><span className="location-cell"><MapPin size={13}/>{b.location}</span><span><Status status={b.status}/></span></div>)}{filtered.length===0&&<div className="empty-state">No birds match your search yet.</div>}</div><button className="primary-btn registry-add" onClick={()=>setShowAdd(true)}><Plus size={16}/> Add bird profile</button></section> : <section className="coming-panel"><div className="coming-icon"><Bird size={27}/></div><div className="section-kicker">GROWING WITH YOUR AVIARY</div><h2>{active} is taking shape.</h2><p>This space is ready for the next WINGLY module. Your bird registry and newly added profiles are available now.</p><button className="primary-btn" onClick={()=>setActive('Bird registry')}>Return to bird registry <ArrowUpRight size={16}/></button></section>}
+      </div>
+    </main>
+    {showAdd&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAdd(false)}}><form className="modal" onSubmit={addBird}><div className="modal-top"><div className="modal-icon"><Bird size={22}/></div><button type="button" className="icon-btn" onClick={()=>setShowAdd(false)} aria-label="Close dialog"><X size={19}/></button></div><div className="section-kicker">NEW PROFILE</div><h2>Welcome a new bird.</h2><p>Start a thoughtful record for a bird in your care.</p><label>Bird’s name<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="e.g. Sky"/></label><label>Species<input required value={form.species} onChange={e=>setForm({...form,species:e.target.value})} placeholder="e.g. Cockatiel"/></label><label>Identification tag <span className="optional">(optional)</span><input value={form.tag} onChange={e=>setForm({...form,tag:e.target.value})} placeholder="e.g. W-1045"/></label><div className="modal-actions"><button type="button" className="secondary-btn" onClick={()=>setShowAdd(false)}>Cancel</button><button className="primary-btn" type="submit"><Plus size={16}/> Create profile</button></div><small className="local-note"><CheckCircle2 size={13}/> Saved in this session. Database sync can be connected next.</small></form></div>}
+    {toast&&<div className="toast"><CheckCircle2 size={17}/>{toast}</div>}
+  </div>
+}
+function Stat({icon,label,value,foot,tone}:{icon:React.ReactNode;label:string;value:string;foot:string;tone:string}){return <div className="stat-card"><div className="stat-top"><div className={`stat-icon ${tone}`}>{icon}</div><button className="stat-menu" aria-label={label} onClick={()=>{}}><MoreHorizontal size={18}/></button></div><div className="stat-label">{label}</div><div className="stat-value">{value}</div><div className="stat-foot"><span className={tone==='peach'?'foot-warn':'foot-dot'}></span>{foot}</div></div>}
+function Status({status}:{status:BirdRecord['status']}){return <span className={`status status-${status.toLowerCase()}`}><i/>{status}</span>}
+function BirdRow({bird,onClick}:{bird:BirdRecord;onClick:()=>void}){return <button className="bird-row" onClick={onClick}><div className={`bird-avatar ${bird.bg}`}>{bird.emoji}</div><div className="bird-details"><b>{bird.name}</b><span>{bird.species} <i>·</i> {bird.tag}</span></div><Status status={bird.status}/><ArrowUpRight size={16} className="row-arrow"/></button>}
+function Task({title,sub,time,done,alert}:{title:string;sub:string;time:string;done?:boolean;alert?:boolean}){const [checked,setChecked]=useState(!!done);return <button className={`task-row ${checked?'task-done':''}`} onClick={()=>setChecked(!checked)}><span className={`task-check ${checked?'checked':''} ${alert?'attention':''}`}>{checked?<CheckCircle2 size={17}/>:alert?<AlertTriangle size={16}/>:<span/>}</span><span className="task-copy"><b>{title}</b><small>{sub}</small></span><span className="task-time"><Clock3 size={12}/>{time}</span></button>}
+export default App
