@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Bird, LayoutDashboard, Feather, Egg, HeartPulse, Sprout, CalendarDays, ChartNoAxesCombined, Settings, Search, Bell, Plus, ChevronDown, ArrowUpRight, MoreHorizontal, Clock3, CheckCircle2, AlertTriangle, Menu, X, SlidersHorizontal, Sparkles, MapPin, Activity, PawPrint } from 'lucide-react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { Bird, LayoutDashboard, Feather, Egg, HeartPulse, Sprout, CalendarDays, ChartNoAxesCombined, Settings, Search, Bell, Plus, ChevronDown, ArrowUpRight, MoreHorizontal, Clock3, CheckCircle2, AlertTriangle, Menu, X, SlidersHorizontal, Sparkles, MapPin } from 'lucide-react'
 
 type BirdRecord = { id: string; name: string; species: string; tag: string; age: string; status: 'Healthy' | 'Monitoring' | 'Incubating'; emoji: string; bg: string; location: string }
 const initialBirds: BirdRecord[] = [
@@ -27,7 +27,7 @@ function App() {
   const [form, setForm] = useState({name:'',species:'',tag:''})
   const filtered = useMemo(() => birds.filter(b => [b.name,b.species,b.tag].some(v => v.toLowerCase().includes(query.toLowerCase()))), [birds, query])
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2800) }
-  const addBird = (e: React.FormEvent) => {
+  const addBird = (e: FormEvent) => {
     e.preventDefault()
     if (!form.name.trim() || !form.species.trim()) return
     const record: BirdRecord = {id:form.tag.trim() || `W-${Math.floor(1000+Math.random()*8999)}`,name:form.name.trim(),species:form.species.trim(),tag:form.tag.trim() || 'Auto assigned',age:'New record',status:'Healthy',emoji:'🐦',bg:'mint',location:'Location not assigned'}
@@ -65,7 +65,7 @@ function App() {
     {toast&&<div className="toast"><CheckCircle2 size={17}/>{toast}</div>}
   </div>
 }
-function Stat({icon,label,value,foot,tone}:{icon:React.ReactNode;label:string;value:string;foot:string;tone:string}){return <div className="stat-card"><div className="stat-top"><div className={`stat-icon ${tone}`}>{icon}</div><button className="stat-menu" aria-label={label} onClick={()=>{}}><MoreHorizontal size={18}/></button></div><div className="stat-label">{label}</div><div className="stat-value">{value}</div><div className="stat-foot"><span className={tone==='peach'?'foot-warn':'foot-dot'}></span>{foot}</div></div>}
+function Stat({icon,label,value,foot,tone}:{icon:ReactNode;label:string;value:string;foot:string;tone:string}){return <div className="stat-card"><div className="stat-top"><div className={`stat-icon ${tone}`}>{icon}</div><button className="stat-menu" aria-label={label} onClick={()=>{}}><MoreHorizontal size={18}/></button></div><div className="stat-label">{label}</div><div className="stat-value">{value}</div><div className="stat-foot"><span className={tone==='peach'?'foot-warn':'foot-dot'}></span>{foot}</div></div>}
 function Status({status}:{status:BirdRecord['status']}){return <span className={`status status-${status.toLowerCase()}`}><i/>{status}</span>}
 function BirdRow({bird,onClick}:{bird:BirdRecord;onClick:()=>void}){return <button className="bird-row" onClick={onClick}><div className={`bird-avatar ${bird.bg}`}>{bird.emoji}</div><div className="bird-details"><b>{bird.name}</b><span>{bird.species} <i>·</i> {bird.tag}</span></div><Status status={bird.status}/><ArrowUpRight size={16} className="row-arrow"/></button>}
 function Task({title,sub,time,done,alert}:{title:string;sub:string;time:string;done?:boolean;alert?:boolean}){const [checked,setChecked]=useState(!!done);return <button className={`task-row ${checked?'task-done':''}`} onClick={()=>setChecked(!checked)}><span className={`task-check ${checked?'checked':''} ${alert?'attention':''}`}>{checked?<CheckCircle2 size={17}/>:alert?<AlertTriangle size={16}/>:<span/>}</span><span className="task-copy"><b>{title}</b><small>{sub}</small></span><span className="task-time"><Clock3 size={12}/>{time}</span></button>}
